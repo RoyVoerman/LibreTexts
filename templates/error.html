@@ -1,35 +1,64 @@
-{% extends "templates/error.html" %}
+{% extends "page.html" %}
 
-{% block title %}Error{% endblock %}
+{% block login_widget %}
+{% endblock %}
 
-{% block scripts %}
+{% block main %}
 
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y1FRQDD44F"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-Y1FRQDD44F');
-</script>
-
-<script src="{{static_url("components/requirejs/require.js") }}" type="text/javascript" charset="utf-8"></script>
-<script src="{{static_url("components/jquery/dist/jquery.min.js") }}" type="text/javascript" charset="utf-8"></script>
-<script src="{{static_url("components/bootstrap/dist/js/bootstrap.min.js") }}" type="text/javascript" charset="utf-8"></script>
+<div class="error">
+  {% block h1_error %}
+  <h1>
+    {{status_code}} : {{status_message}}
+  </h1>
+  {% endblock h1_error %}
+  {% block error_detail %}
+  {% if message %}
+  <p>
+    {{message}}
+  </p>
+  {% endif %}
+  {% if message_html %}
+  <p>
+    {{message_html | safe}}
+  </p>
+  {% endif %}
+  {% if extra_error_html %}
+  <p>
+    {{extra_error_html | safe}}
+  </p>
+  {% endif %}
+  {% endblock error_detail %}
+</div>
 
 {% endblock %}
 
-{% block error_detail %}
-{{ super() }}
-{% if status_code == 403 %}
-  <p><strong>It looks like you need to request an account!</strong></p>
-  <p>If you are a LibreTexts instructor or UC Davis affiliate, you can request an account by
-  <a href="mailto:jupyterteam@ucdavis.edu">sending us</a> an email from a Google Authentication connected email address.</p>
-  <p>LibreTexts affiliated student accounts should be requested by their instructors.</p>
-{% elif status_code == 400 %}
-  <p>If your authentication has expired, please login again from <a href="/">the home page</a>.</p>
-{% else %}
-  <p>Oh no! Something is probably wrong on our end. If this problem persists, please <a href="mailto:jupyterteam@ucdavis.edu">email us</a>.</p>
-{% endif %}
-{% endblock error_detail %}
+{% block script %}
+  {{super()}}
+
+  <script type="text/javascript">
+    function _remove_redirects_from_url() {
+      if (window.location.search.length <= 1) {
+        return;
+      }
+      var search_parameters = window.location.search.slice(1).split('&');
+      for (var i = 0; i < search_parameters.length; i++) {
+        if (search_parameters[i].split('=')[0] === 'redirects') {
+          // remote redirects from search parameters
+          search_parameters.splice(i, 1);
+          var new_search = '';
+          if (search_parameters.length) {
+            new_search = '?' + search_parameters.join('&');
+          }
+          var new_url = window.location.origin +
+                        window.location.pathname +
+                        new_search +
+                        window.location.hash;
+          window.history.replaceState({}, "", new_url);
+          return;
+        }
+      }
+    }
+
+    _remove_redirects_from_url();
+  </script>
+{% endblock %}
